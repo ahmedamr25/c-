@@ -1,0 +1,91 @@
+@model CarRental.Models.Reservation
+@{
+    ViewData["Title"] = "Create Reservation";
+    var vehicles = ViewBag.Vehicles as List<Vehicle> ?? new List<Vehicle>();
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Create New Reservation</h2>
+
+    <div class="card shadow">
+        <div class="card-header bg-info text-white">
+            <h4 class="card-title mb-0">Reservation Details</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="StartDate" class="form-label">Start Date</label>
+                        <input asp-for="StartDate" class="form-control" type="date" min="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="EndDate" class="form-label">End Date</label>
+                        <input asp-for="EndDate" class="form-control" type="date" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" required>
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="vehicleSelect" class="form-label">Select Vehicle</label>
+                    <select id="vehicleSelect" name="VehicleId" class="form-select" required>
+                        <option value="">-- Select a Vehicle --</option>
+                        @foreach (var vehicle in vehicles)
+                        {
+                        <option value="@vehicle.Id" data-dailyrate="@vehicle.DailyRate">
+                            @vehicle.Brand @vehicle.Model (@vehicle.Year) - $@vehicle.DailyRate/day
+                        </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="TotalAmount" class="form-label">Total Amount (Calculated)</label>
+                    <input asp-for="TotalAmount" class="form-control" readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Notes" class="form-label">Additional Notes</label>
+                    <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Any special requirements or notes..."></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                    <button type="submit" class="btn btn-primary">Proceed to Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startDateInput = document.querySelector('[name="StartDate"]');
+            const endDateInput = document.querySelector('[name="EndDate"]');
+            const vehicleSelect = document.getElementById('vehicleSelect');
+            const totalAmountInput = document.querySelector('[name="TotalAmount"]');
+
+            function calculateTotal() {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+                const selectedVehicle = vehicleSelect.options[vehicleSelect.selectedIndex];
+
+                if (startDate && endDate && selectedVehicle && selectedVehicle.value) {
+                    const dailyRate = parseFloat(selectedVehicle.getAttribute('data-dailyrate'));
+                    const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+                    if (daysDiff > 0 && dailyRate > 0) {
+                        const total = daysDiff * dailyRate;
+                        totalAmountInput.value = total.toFixed(2);
+                    }
+                }
+            }
+
+            startDateInput.addEventListener('change', calculateTotal);
+            endDateInput.addEventListener('change', calculateTotal);
+            vehicleSelect.addEventListener('change', calculateTotal);
+        });
+    </script>
+}

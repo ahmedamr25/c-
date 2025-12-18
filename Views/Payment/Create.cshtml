@@ -1,0 +1,81 @@
+@model CarRental.Models.Payment
+@{
+    ViewData["Title"] = "Make Payment";
+    var reservation = ViewBag.Reservation as Reservation;
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Complete Payment</h2>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-warning">
+                    <h4 class="card-title mb-0 text-white">Payment Information</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <input type="hidden" asp-for="ReservationId" value="@reservation?.Id" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Reservation Total</label>
+                            <input type="text" class="form-control" value="$@reservation?.TotalAmount" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Amount" class="form-label">Payment Amount</label>
+                            <input asp-for="Amount" class="form-control" value="@reservation?.TotalAmount" required>
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Method" class="form-label">Payment Method</label>
+                            <select asp-for="Method" class="form-select" required>
+                                <option value="">-- Select Payment Method --</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Debit Card">Debit Card</option>
+                                <option value="PayPal">PayPal</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="Cash">Cash</option>
+                            </select>
+                            <span asp-validation-for="Method" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="TransactionReference" class="form-label">Transaction Reference (Optional)</label>
+                            <input asp-for="TransactionReference" class="form-control" placeholder="e.g., transaction ID">
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Notes" class="form-label">Payment Notes (Optional)</label>
+                            <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-controller="Reservation" asp-action="Index" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success">Complete Payment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Reservation Summary</h5>
+                </div>
+                <div class="card-body">
+                    @if (reservation != null)
+                    {
+                    <p><strong>Vehicle:</strong> @reservation.Vehicle?.Brand @reservation.Vehicle?.Model</p>
+                    <p><strong>Period:</strong> @reservation.StartDate.ToString("dd/MM/yyyy") - @reservation.EndDate.ToString("dd/MM/yyyy")</p>
+                    <p><strong>Total Days:</strong> @((reservation.EndDate - reservation.StartDate).Days)</p>
+                    <hr>
+                    <p class="h5"><strong>Total Amount:</strong> $@reservation.TotalAmount</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
